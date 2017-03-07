@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2003
- * David M�ller ELSOFT AG Switzerland. d.mueller@elsoft.ch
+ * David Müller ELSOFT AG Switzerland. d.mueller@elsoft.ch
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -126,6 +126,7 @@ typedef struct {
 	S3C24X0_REG32	CLKCON;
 	S3C24X0_REG32	CLKSLOW;
 	S3C24X0_REG32	CLKDIVN;
+	S3C24X0_REG32	CAMDIVN; //不加这个编译通不过,因为有用到这个寄存器
 } /*__attribute__((__packed__))*/ S3C24X0_CLOCK_POWER;
 
 
