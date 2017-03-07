@@ -1,8 +1,8 @@
 /*
  *  armboot - Startup Code for ARM920 CPU-core
  *
- *  Copyright (c) 2001	Marius Gr�ger <mag@sysgo.de>
- *  Copyright (c) 2002	Alex Z�pke <azu@sysgo.de>
+ *  Copyright (c) 2001	Marius Gröger <mag@sysgo.de>
+ *  Copyright (c) 2002	Alex Züpke <azu@sysgo.de>
  *  Copyright (c) 2002	Gary Jennejohn <gj@denx.de>
  *
  * See file CREDITS for list of people who contributed to this
@@ -220,6 +220,9 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 	/* END stuff after relocation */
 #endif
 
+/* C函数的运行环境已经完全准备好了，通过如下命令直接跳转(这之后,程序才在内存中执行)，
+ * 将调用lib_arm/board.c中的start_armboot函数,这是第二阶段的入口点。
+ * /
 	ldr	pc, _start_armboot
 
 _start_armboot:	.word start_armboot

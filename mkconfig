@@ -43,7 +43,7 @@ if [ "$SRCTREE" != "$OBJTREE" ] ; then
 	mkdir asm-$2
 	ln -s asm-$2 asm
 else
-	cd ./include
+	cd ./include #这里已经进入到./include目录中,不再是顶层目录了.
 	rm -f asm
 	ln -s asm-$2 asm
 fi

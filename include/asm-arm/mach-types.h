@@ -206,6 +206,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_FESTER               191
 #define MACH_TYPE_GPI                  192
 #define MACH_TYPE_SMDK2410             193
+#define MACH_TYPE_SMDK2440			   1008
 #define MACH_TYPE_I519                 194
 #define MACH_TYPE_NEXIO                195
 #define MACH_TYPE_BITBOX               196

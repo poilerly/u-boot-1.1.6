@@ -41,6 +41,23 @@
 #define MPLL 0
 #define UPLL 1
 
+// 为了使用gd变量
+DECLARE_GLOBAL_DATA_PTR;
+// for S3C2440
+#define S3C2440_CLKDIVN_PDIVN       (1<<0)
+#define S3C2440_CLKDIVN_HDIVN_MASK  (3<<1)
+#define S3C2440_CLKDIVN_HDIVN_1     (0<<1)
+#define S3C2440_CLKDIVN_HDIVN_2     (1<<1)
+#define S3C2440_CLKDIVN_HDIVN_4_8   (2<<1)
+#define S3C2440_CLKDIVN_HDIVN_3_6   (3<<1)
+#define S3C2440_CLKDIVN_UCLK        (1<<3)
+
+#define S3C2440_CAMDIVN_CAMCLK_MASK (0xf<<0)
+#define S3C2440_CAMDIVN_CAMCLK_SEL  (1<<4)
+#define S3C2440_CAMDIVN_HCLK3_HALF  (1<<8)
+#define S3C2440_CAMDIVN_HCLK4_HALF  (1<<9)
+#define S3C2440_CAMDIVN_DVSEN       (1<<12)
+
 /* ------------------------------------------------------------------------- */
 /* NOTE: This describes the proper use of this file.
  *
@@ -57,17 +74,22 @@ static ulong get_PLLCLK(int pllreg)
     ulong r, m, p, s;
 
     if (pllreg == MPLL)
-	r = clk_power->MPLLCON;
+	   r = clk_power->MPLLCON;
     else if (pllreg == UPLL)
-	r = clk_power->UPLLCON;
+	   r = clk_power->UPLLCON;
     else
-	hang();
+	   hang();
 
     m = ((r & 0xFF000) >> 12) + 8;
     p = ((r & 0x003F0) >> 4) + 2;
     s = r & 0x3;
 
-    return((CONFIG_SYS_CLK_FREQ * m) / (p << s));
+    /* 同时支持S3C2410和S3C2440 */
+    if(gd->bd->bi_arch_number == MACH_TYPE_SMDK2410)
+        return((CONFIG_SYS_CLK_FREQ * m) / (p << s));       //S3C2410
+    else
+        return((CONFIG_SYS_CLK_FREQ * m * 2) / (p << s));   //S3C2440
+    
 }
 
 /* return FCLK frequency */
@@ -80,16 +102,74 @@ ulong get_FCLK(void)
 ulong get_HCLK(void)
 {
     S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
+    unsigned long clkdiv;
+    unsigned long camdiv;
+    int hdiv = 1;
 
-    return((clk_power->CLKDIVN & 0x2) ? get_FCLK()/2 : get_FCLK());
+    /* 同时支持S3C2410和S3C2440 */
+    if(gd->bd->bi_arch_number == MACH_TYPE_SMDK2410)
+        return((clk_power->CLKDIVN & 0x2) ? get_FCLK()/2 : get_FCLK()); //参考书中p161页的表10.1
+    else
+    {
+        clkdiv = clk_power->CLKDIVN; //获得CLKDIVN寄存器的内容
+        camdiv = clk_power->CAMDIVN; //获得CAMDIVN寄存器的内容
+
+        /* 计算分频比 */
+        switch(clkdiv & S3C2440_CLKDIVN_HDIVN_MASK)
+        {
+            case S3C2440_CLKDIVN_HDIVN_1:
+                hdiv = 1;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_2:
+                hdiv = 2;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_4_8:
+                hdiv = (camdiv & S3C2440_CAMDIVN_HCLK4_HALF) ? 8 : 4;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_3_6:
+                hdiv = (camdiv & S3C2440_CAMDIVN_HCLK3_HALF) ? 6 : 3;
+                break;
+        }
+
+        return get_FCLK() / hdiv; //S3C2440
+    }
 }
 
 /* return PCLK frequency */
 ulong get_PCLK(void)
 {
     S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
+    unsigned long clkdiv;
+    unsigned long camdiv;
+    int hdiv = 1;
 
-    return((clk_power->CLKDIVN & 0x1) ? get_HCLK()/2 : get_HCLK());
+    /* 同时支持S3C2410和S3C2440 */
+    if(gd->bd->bi_arch_number == MACH_TYPE_SMDK2410)
+        return((clk_power->CLKDIVN & 0x1) ? get_HCLK()/2 : get_HCLK()); //参考书中p161页的表10.1
+    else
+    {
+        clkdiv = clk_power->CLKDIVN; //获得CLKDIVN寄存器的内容
+        camdiv = clk_power->CAMDIVN; //获得CAMDIVN寄存器的内容
+
+        /* 计算分频比 */
+        switch(clkdiv & S3C2440_CLKDIVN_HDIVN_MASK)
+        {
+            case S3C2440_CLKDIVN_HDIVN_1:
+                hdiv = 1;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_2:
+                hdiv = 2;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_4_8:
+                hdiv = (camdiv & S3C2440_CAMDIVN_HCLK4_HALF) ? 8 : 4;
+                break;
+            case S3C2440_CLKDIVN_HDIVN_3_6:
+                hdiv = (camdiv & S3C2440_CAMDIVN_HCLK3_HALF) ? 6 : 3;
+                break;
+        }
+
+        return get_FCLK() / hdiv / ((clkdiv & S3C2440_CLKDIVN_PDIVN) ? 2 : 1); //S3C2440
+    }
 }
 
 /* return UCLK frequency */

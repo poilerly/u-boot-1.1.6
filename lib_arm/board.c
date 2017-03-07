@@ -209,7 +209,7 @@ static void display_flash_config (ulong size)
  * argument, and returns an integer return code, where 0 means
  * "continue" and != 0 means "fatal error, hang the system".
  */
-typedef int (init_fnc_t) (void);
+typedef int (init_fnc_t) (void); /* 定义了一个函数指针原型 */
 
 int print_cpuinfo (void); /* test-only */
 
