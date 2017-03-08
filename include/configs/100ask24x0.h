@@ -154,11 +154,15 @@
  * FLASH and environment organization
  */
 
+//注释掉下面两个类型的Nor Flash设置,因为不是TQ2440开发板上的型号
 #if 0
 #define CONFIG_AMD_LV400	1	/* uncomment this if you have a LV400 flash */
-#endif
 #define CONFIG_AMD_LV800	1	/* uncomment this if you have a LV800 flash */
+#endif
 
+#define CONFIG_EON_29LV160AB	1 //添加TQ2440开发板的设置
+
+//Nor Flash接在BANK0上
 #define CFG_MAX_FLASH_BANKS	1	/* max number of memory banks */
 #ifdef CONFIG_AMD_LV800
 #define PHYS_FLASH_SIZE		0x00100000 /* 1MB */
@@ -169,6 +173,12 @@
 #define PHYS_FLASH_SIZE		0x00080000 /* 512KB */
 #define CFG_MAX_FLASH_SECT	(11)	/* max number of sectors on one chip */
 #define CFG_ENV_ADDR		(CFG_FLASH_BASE + 0x070000) /* addr of environment */
+#endif
+
+#ifdef CONFIG_EON_29LV160AB
+#define PHYS_FLASH_SIZE		0x00200000 /* 开发板上是2MB */
+#define CFG_MAX_FLASH_SECT	(35)	/* max number of sectors on one chip 芯片手册上是35个扇区*/
+#define CFG_ENV_ADDR		(CFG_FLASH_BASE + 0x080000) /* addr of environment   暂设环境变量的首地址为0x080000,即:256k */
 #endif
 
 /* timeout values are in ticks */

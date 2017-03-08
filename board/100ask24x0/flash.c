@@ -28,7 +28,8 @@ ulong myflush (void);
 
 
 #define FLASH_BANK_SIZE	PHYS_FLASH_SIZE
-#define MAIN_SECT_SIZE  0x10000	/* 64 KB */
+#define MAIN_SECT_SIZE  0x08000	/* 32 Kword 主要扇区大小*/
+//芯片手册中"one 8-Kword,two 4-Kword,one 16K-word and thirty-one 32-Kword sectors(word mode)"
 
 flash_info_t flash_info[CFG_MAX_FLASH_BANKS];
 
@@ -43,6 +44,10 @@ flash_info_t flash_info[CFG_MAX_FLASH_BANKS];
 
 #define MEM_FLASH_ADDR1		(*(volatile u16 *)(CFG_FLASH_BASE + (0x00000555 << 1)))
 #define MEM_FLASH_ADDR2		(*(volatile u16 *)(CFG_FLASH_BASE + (0x000002AA << 1)))
+/*由于我们是把Nor Flash连接到了s3c2440的bank0上，因此Nor Flash中的地址相对于s3c2440来说基址为0x00000000，
+ *即CONFIG_FLASH_BASE  = 0,而之所以又把Nor Flash中的地址向左移一位（即乘以2），是因为我们是把s3c2440的
+ *ADDR1连接到了norflash的A0上的缘故。
+ */
 
 #define BIT_ERASE_DONE		0x00000080
 #define BIT_RDY_MASK		0x00000080
@@ -65,12 +70,15 @@ ulong flash_init (void)
 		ulong flashbase = 0;
 
 		flash_info[i].flash_id =
-#if defined(CONFIG_AMD_LV400)
+/*#if defined(CONFIG_AMD_LV400)
 			(AMD_MANUFACT & FLASH_VENDMASK) |
 			(AMD_ID_LV400B & FLASH_TYPEMASK);
 #elif defined(CONFIG_AMD_LV800)
 			(AMD_MANUFACT & FLASH_VENDMASK) |
-			(AMD_ID_LV800B & FLASH_TYPEMASK);
+			(AMD_ID_LV800B & FLASH_TYPEMASK);*/ //TQ2440开发板上没有使用这两个型号的Nor Flash芯片
+#if defined(CONFIG_EON_29LV160AB)
+			(EON_MANUFACT & FLASH_VENDMASK) |
+			(EON_ID_LV160AB & FLASH_TYPEMASK);
 #else
 #error "Unknown flash configured"
 #endif
@@ -78,33 +86,27 @@ ulong flash_init (void)
 		flash_info[i].sector_count = CFG_MAX_FLASH_SECT;
 		memset (flash_info[i].protect, 0, CFG_MAX_FLASH_SECT);
 		if (i == 0)
-			flashbase = PHYS_FLASH_1;
+			flashbase = PHYS_FLASH_1; //#define PHYS_FLASH_1 0x00000000 /* Flash Bank #1
 		else
 			panic ("configured too many flash banks!\n");
 		for (j = 0; j < flash_info[i].sector_count; j++) {
 			if (j <= 3) {
-				/* 1st one is 16 KB */
+				/* 1st one is 8 KB */
 				if (j == 0) {
-					flash_info[i].start[j] =
-						flashbase + 0;
+					flash_info[i].start[j] = flashbase + 0;
 				}
 
-				/* 2nd and 3rd are both 8 KB */
+				/* 2nd and 3rd are both 4 KB */
 				if ((j == 1) || (j == 2)) {
-					flash_info[i].start[j] =
-						flashbase + 0x4000 + (j -
-								      1) *
-						0x2000;
+					flash_info[i].start[j] = flashbase + 0x2000 + (j - 1) * 0x2000;
 				}
 
-				/* 4th 32 KB */
+				/* 4th 16 KB */
 				if (j == 3) {
-					flash_info[i].start[j] =
-						flashbase + 0x8000;
+					flash_info[i].start[j] = flashbase + 0x4000;
 				}
 			} else {
-				flash_info[i].start[j] =
-					flashbase + (j - 3) * MAIN_SECT_SIZE;
+				flash_info[i].start[j] = flashbase + (j - 3) * MAIN_SECT_SIZE;
 			}
 		}
 		size += flash_info[i].size;
@@ -123,6 +125,7 @@ ulong flash_init (void)
 }
 
 /*-----------------------------------------------------------------------
+ * 修改flash_print_info(),添加EN29LV160AB的相关信息如下:
  */
 void flash_print_info (flash_info_t * info)
 {
@@ -132,6 +135,8 @@ void flash_print_info (flash_info_t * info)
 	case (AMD_MANUFACT & FLASH_VENDMASK):
 		printf ("AMD: ");
 		break;
+	case (EON_MANUFACT & FLASH_VENDMASK):
+		printf ("EON: ");
 	default:
 		printf ("Unknown Vendor ");
 		break;
@@ -143,6 +148,9 @@ void flash_print_info (flash_info_t * info)
 		break;
 	case (AMD_ID_LV800B & FLASH_TYPEMASK):
 		printf ("1x Amd29LV800BB (8Mbit)\n");
+		break;
+	case (EON_ID_LV160AB & FLASH_TYPEMASK):
+		printf ("1x EN29LV160AB (16Mbit)\n");
 		break;
 	default:
 		printf ("Unknown Chip Type\n");
@@ -167,6 +175,7 @@ void flash_print_info (flash_info_t * info)
 }
 
 /*-----------------------------------------------------------------------
+ * 修改flash_erase()
  */
 
 int flash_erase (flash_info_t * info, int s_first, int s_last)
@@ -186,7 +195,7 @@ int flash_erase (flash_info_t * info, int s_first, int s_last)
 	}
 
 	if ((info->flash_id & FLASH_VENDMASK) !=
-	    (AMD_MANUFACT & FLASH_VENDMASK)) {
+	    (EON_MANUFACT & FLASH_VENDMASK)) {
 		return ERR_UNKNOWN_FLASH_VENDOR;
 	}
 
