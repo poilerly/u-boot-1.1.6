@@ -222,7 +222,7 @@ clbss_l:str	r2, [r0]		/* clear loop...                    */
 
 /* C函数的运行环境已经完全准备好了，通过如下命令直接跳转(这之后,程序才在内存中执行)，
  * 将调用lib_arm/board.c中的start_armboot函数,这是第二阶段的入口点。
- * /
+ */
 	ldr	pc, _start_armboot
 
 _start_armboot:	.word start_armboot
