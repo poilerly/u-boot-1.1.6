@@ -79,7 +79,7 @@
 			(CONFIG_CMD_DFL	 | \
 			CFG_CMD_CACHE	 | \
 			CFG_CMD_PING	 | \
-			/*CFG_CMD_NAND	 |*/ \
+			CFG_CMD_NAND	 | \
 			/*CFG_CMD_EEPROM |*/ \
 			/*CFG_CMD_I2C	 |*/ \
 			/*CFG_CMD_USB	 |*/ \
@@ -182,6 +182,11 @@
 #define CFG_MAX_FLASH_SECT	(35)	/* max number of sectors on one chip 芯片手册上是35个扇区*/
 #define CFG_ENV_ADDR		(CFG_FLASH_BASE + 0x080000) /* addr of environment   暂设环境变量的首地址为0x080000,即:256k */
 #endif
+
+//NAND Flash
+#define CFG_NAND_BASE			0x4E000000	//无实际意义,NAND Flash寄存器的基地址,这在board_nand_init中重新指定
+#define CFG_MAX_NAND_DEVICE		1 //NAND Flash设备的数目为1
+#define NAND_MAX_CHIPS			1 //每个NAND Flash设备由1个NAND Flash芯片组成
 
 /* timeout values are in ticks */
 #define CFG_FLASH_ERASE_TOUT	(5*CFG_HZ) /* Timeout for Flash Erase */

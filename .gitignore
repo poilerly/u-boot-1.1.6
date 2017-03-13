@@ -1,4 +1,4 @@
-# source insight
+# source insight 3.5
 *.IAB
 *.IAD
 *.IMB
@@ -10,3 +10,12 @@
 *.WK3
 *.PR
 *.SearchResults
+
+# source insight 4.084
+/u_boot_1.1.6.si4project/
+
+# SlickEdit
+*.vpj
+*.vpw
+*.vpwhist
+*.vtg

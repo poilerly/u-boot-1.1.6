@@ -52,6 +52,7 @@ typedef enum {
 #define S3C24X0_CLOCK_POWER_BASE	0x4C000000
 #define S3C24X0_LCD_BASE		0x4D000000
 #define S3C2410_NAND_BASE		0x4E000000
+#define S3C2440_NAND_BASE		0x4E000000
 #define S3C24X0_UART_BASE		0x50000000
 #define S3C24X0_TIMER_BASE		0x51000000
 #define S3C24X0_USB_DEVICE_BASE		0x52000140
@@ -96,6 +97,10 @@ static inline S3C24X0_LCD * const S3C24X0_GetBase_LCD(void)
 static inline S3C2410_NAND * const S3C2410_GetBase_NAND(void)
 {
 	return (S3C2410_NAND * const)S3C2410_NAND_BASE;
+}
+static inline S3C2440_NAND * const S3C2440_GetBase_NAND(void)
+{
+	return (S3C2440_NAND * const)S3C2440_NAND_BASE;
 }
 static inline S3C24X0_UART * const S3C24X0_GetBase_UART(S3C24X0_UARTS_NR nr)
 {
