@@ -2311,22 +2311,30 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 	this->select_chip(mtd, 0);
 
 	/* Send the command for reading device ID */
-	this->cmdfunc (mtd, NAND_CMD_READID, 0x00, -1);
+	this->cmdfunc (mtd, NAND_CMD_READID, 0x00, -1); //发送命令读取设备ID,命令是0x90
 
 	/* Read manufacturer and device IDs */
-	nand_maf_id = this->read_byte(mtd);
-	nand_dev_id = this->read_byte(mtd);
+	nand_maf_id = this->read_byte(mtd); //读取制造商ID
+	nand_dev_id = this->read_byte(mtd); //读取设备ID TQ2440的NAND Flash是K9F2G08U0A,ID=DAh
 
-	/* Print and store flash device information */
+	printk (KERN_INFO "NAND device: Manufacturer ID:"
+		" 0x%02x, Chip ID: 0x%02x (%s %s)\n", nand_maf_id, nand_dev_id,
+		nand_manuf_ids[i].name , mtd->name); //自己添加,用于确认读出的nand flash id.
+
+	/* Print and store flash device information */ //打印和储存flash设备信息
 	for (i = 0; nand_flash_ids[i].name != NULL; i++) {
 
 		if (nand_dev_id != nand_flash_ids[i].id)
-			continue;
+			continue; //如果ID不符合就找下一个
 
 		if (!mtd->name) mtd->name = nand_flash_ids[i].name;
-		this->chipsize = nand_flash_ids[i].chipsize << 20;
+		this->chipsize = nand_flash_ids[i].chipsize << 20; //256<<20,刚好是256MiB
 
 		/* New devices have all the information in additional id bytes */
+		/* 新设备的pagesize=0,这里需要读取额外的字节以获得信息
+		 * K9F2G08U0A
+		 * 2nd:0xDA, 3rd:0x10, 4th:0x95h, 5th:0x44.
+		 */
 		if (!nand_flash_ids[i].pagesize) {
 			int extid;
 			/* The 3rd id byte contains non relevant data ATM */
@@ -2334,16 +2342,16 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 			/* The 4th id byte is the important one */
 			extid = this->read_byte(mtd);
 			/* Calc pagesize */
-			mtd->oobblock = 1024 << (extid & 0x3);
-			extid >>= 2;
+			mtd->oobblock = 1024 << (extid & 0x3); //页大小2KB:1024<<1=2048
+			extid >>= 2; //右移两位,去掉页大小的信息
 			/* Calc oobsize */
-			mtd->oobsize = (8 << (extid & 0x03)) * (mtd->oobblock / 512);
-			extid >>= 2;
+			mtd->oobsize = (8 << (extid & 0x03)) * (mtd->oobblock / 512); //(每页oob的大小 = oob块大小 * 每页oob块数量)
+			extid >>= 2; //右移两位,去掉oob的信息
 			/* Calc blocksize. Blocksize is multiples of 64KiB */
-			mtd->erasesize = (64 * 1024)  << (extid & 0x03);
-			extid >>= 2;
+			mtd->erasesize = (64 * 1024)  << (extid & 0x03); //64KiB左移1位刚好是128KiB.
+			extid >>= 2; //右移两位,去掉块大小信息
 			/* Get buswidth information */
-			busw = (extid & 0x01) ? NAND_BUSWIDTH_16 : 0;
+			busw = (extid & 0x01) ? NAND_BUSWIDTH_16 : 0; //位宽8位
 
 		} else {
 			/* Old devices have this data hardcoded in the
@@ -2405,6 +2413,10 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 		}
 		break;
 	}
+
+	printk (KERN_INFO "NAND device: Manufacturer ID:"
+	" 0x%02x, Chip ID: 0x%02x (%s %s)\n", nand_maf_id, nand_dev_id,
+	nand_manuf_ids[i].name , mtd->name); //自己添加,用于确认读出的nand flash id.
 
 	if (!nand_flash_ids[i].name) {
 		printk (KERN_WARNING "No NAND device found!!!\n");
