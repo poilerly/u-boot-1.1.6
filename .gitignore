@@ -12,7 +12,7 @@
 *.SearchResults
 
 # source insight 4.084
-/u_boot_1.1.6.si4project/
+uboot-1.1.6-SI.si4project/
 
 # SlickEdit
 *.vpj
