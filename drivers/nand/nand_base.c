@@ -2268,7 +2268,6 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 {
 	int i, j, nand_maf_id, nand_dev_id, busw;
 	struct nand_chip *this = mtd->priv;
-	int tmp_manf,tmp_id;
 
 	/* Get buswidth to select the correct functions*/
 	busw = this->options & NAND_BUSWIDTH_16;
@@ -2311,27 +2310,12 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 	/* Select the device */
 	this->select_chip(mtd, 0);
 
-	this->cmdfunc(mtd, NAND_CMD_RESET, -1, -1); //2017.05.25
-
 	/* Send the command for reading device ID */
 	this->cmdfunc (mtd, NAND_CMD_READID, 0x00, -1); //发送命令读取设备ID,命令是0x90
 
 	/* Read manufacturer and device IDs */
 	nand_maf_id = this->read_byte(mtd); //读取制造商ID
 	nand_dev_id = this->read_byte(mtd); //读取设备ID TQ2440的NAND Flash是K9F2G08U0A,ID=DAh
-
-	/* Send the command for reading device ID */
-	this->cmdfunc (mtd, NAND_CMD_READID, 0x00, -1); //发送命令读取设备ID,命令是0x90
-
-	/* Read manufacturer and device IDs */
-	tmp_manf = this->read_byte(mtd); //读取制造商ID
-	tmp_id = this->read_byte(mtd); //读取设备ID TQ2440的NAND Flash是K9F2G08U0A,ID=DAh
-
-	printk("Hello: Manufacturer ID: 0x%02x, Chip ID: 0x%02x\n\n", tmp_manf, tmp_id);
-
-	printk (KERN_INFO "NAND device: Manufacturer ID:"
-		" 0x%02x, Chip ID: 0x%02x (%s %s)\n", nand_maf_id, nand_dev_id,
-		nand_manuf_ids[i].name , mtd->name); //自己添加,用于确认读出的nand flash id.
 
 	/* Print and store flash device information */ //打印和储存flash设备信息
 	for (i = 0; nand_flash_ids[i].name != NULL; i++) {
@@ -2425,10 +2409,6 @@ int nand_scan (struct mtd_info *mtd, int maxchips)
 		}
 		break;
 	}
-
-	printk (KERN_INFO "NAND device: Manufacturer ID:"
-	" 0x%02x, Chip ID: 0x%02x (%s %s)\n", nand_maf_id, nand_dev_id,
-	nand_manuf_ids[i].name , mtd->name); //自己添加,用于确认读出的nand flash id.
 
 	if (!nand_flash_ids[i].name) {
 		printk (KERN_WARNING "No NAND device found!!!\n");

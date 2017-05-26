@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define S3C2410_NFCONF_nFCE     (1<<11)
 
 #define S3C2440_NFSTAT_READY    (1<<0)
-#define S3C2440_NFCONF_nFCE     (1<<1)
+#define S3C2440_NFCONT_nFCE     (1<<1)
 
 
 /* S3C2410:NAND Flash的片选函数 */
@@ -75,7 +75,7 @@ static void s3c2410_nand_hwcontrol(struct mtd_info *mtd, int cmd)
  *
  * 返回值:0表示忙,1表示就绪
  */
-static void s3c2410_nand_devready(struct mtd_info *mtd, int cmd)
+static int s3c2410_nand_devready(struct mtd_info *mtd)
 {
 	S3C2410_NAND *const s3c2410nand = S3C2410_GetBase_NAND();
 
@@ -90,11 +90,11 @@ static void s3c2440_nand_select_chip(struct mtd_info *mtd, int chip)
 
 	if (chip == -1)
 	{
-		s3c2440nand->NFCONF |= S3C2440_NFCONF_nFCE; //禁止片选信号
+		s3c2440nand->NFCONT |= S3C2440_NFCONT_nFCE; //禁止片选信号
 	}
 	else
 	{
-		s3c2440nand->NFCONF &= ~S3C2440_NFCONF_nFCE; //使能片选信号
+		s3c2440nand->NFCONT &= ~S3C2440_NFCONT_nFCE; //使能片选信号
 	}
 }
 
@@ -140,7 +140,7 @@ static void s3c2440_nand_hwcontrol(struct mtd_info *mtd, int cmd)
  *
  * 返回值:0表示忙,1表示就绪
  */
-static void s3c2440_nand_devready(struct mtd_info *mtd, int cmd)
+static int s3c2440_nand_devready(struct mtd_info *mtd)
 {
 	S3C2440_NAND *const s3c2440nand = S3C2440_GetBase_NAND();
 
@@ -171,7 +171,7 @@ static void s3c24x0_nand_inithw(void)
 		/* 设置时序 */
 		s3c2440nand->NFCONF = (TACLS << 12) | (TWRPH0 << 8) | (TWRPH1 << 4);
 		/* 使能NAND Flash控制器, 初始化ECC, 禁止片选 */
-		s3c2440nand->NFCONT = (1 << 4) | (1 << 1) | (1 << 0);
+		s3c2440nand->NFCONT = (1 << 4) | (0 << 1) | (1 << 0);
 	}
 }
 
