@@ -19,6 +19,8 @@ uboot-1.1.6-SI.si4project/
 *.vpw
 *.vpwhist
 *.vtg
+*.vpwhist
+*.vpwhistu
 
 # make
 board/100ask24x0/*.o
@@ -111,3 +113,8 @@ tools/environment.c
 tools/gen_eth_addr
 tools/img2srec
 tools/mkimage
+
+#make
+u-boot
+u-boot.bin
+u-boot.srec
