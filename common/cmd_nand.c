@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Driver for NAND support, Rick Bronson
  * borrowed heavily from:
  * (c) 1999 Machine Vision Holdings, Inc.
@@ -351,6 +351,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 				opts.quiet      = quiet;
 				ret = nand_write_opts(nand, &opts);
 			}
+#if 0
 		} else if (s != NULL && !strcmp(s, ".yaffs")) {
 			if (read) {
 				/* read */
@@ -377,6 +378,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 				opts.skipfirstblk = 1;	/* 跳过第一个可用块 */
                 ret = nand_write_opts(nand, &opts);
 			}
+#endif
 		} else {
 			if (read)
 				ret = nand_read(nand, off, &size, (u_char *)addr);
