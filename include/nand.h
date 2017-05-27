@@ -76,8 +76,8 @@ struct nand_write_options {
 	int noecc;		/* write without ecc */
 	int writeoob;		/* image contains oob data */
 	int pad;		/* pad to page size */
-	int blockalign;		/* 1|2|4 set multiple of eraseblocks
-				 * to align to */
+	int blockalign;		/* 1|2|4 set multiple of eraseblocks to align to */
+	int skipfirstblk;	/* 新加, 烧写时跳过第一个可用块 */
 };
 
 typedef struct nand_write_options nand_write_options_t;
